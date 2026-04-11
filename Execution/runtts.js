@@ -1,31 +1,36 @@
-const { exec } = require("child_process");
-const util = require("util");
+const { spawn } = require("child_process");
 
-const execPromise = util.promisify(exec);
+const runTTS = (text, voicePath, language) => {
+    return new Promise((resolve, reject) => {
+        const outputPath = `D:/COQUITTS/outputs/output_${Date.now()}.wav`;
 
-const runTTS = async (text, voicePath, language) => {
-  try {
-    const outputPath = `D:/COQUITTS/outputs/output_${Date.now()}.wav`;
+        const py = spawn("D:/COQUITTS/tts_venv/Scripts/python.exe", [
+            "D:/COQUITTS/test.py",
+            text,
+            voicePath,
+            language,
+            outputPath
+        ]);
+        
+        py.stdout.on("data", (data) => {
+            console.log("Python TTS:", data.toString());
+        });
 
-    // escape quotes in text
-    const safeText = text.replace(/"/g, '\\"');
+        py.stderr.on("data", (data) => {
+            console.warn("Python TTS warning:", data.toString());
+        });
 
-    const command = `"D:/COQUITTS/tts_venv/Scripts/python.exe" "D:/COQUITTS/test.py" "${safeText}" "${voicePath}" "${language}" "${outputPath}"`;
+        py.on("close", (code) => {
+            if (code !== 0) {
+                return reject(new Error("TTS script failed with code " + code));
+            }
+            resolve(outputPath);
+        });
 
-   const { stdout, stderr } = await execPromise(command, {
-    timeout: 0 // no timeout
-});
-
-    if (stderr) {
-      console.warn("Python warning:", stderr);
-    }
-
-    return outputPath;
-
-  } catch (error) {
-    console.error("TTS Error:", error);
-    throw error;
-  }
+        py.on("error", (err) => {
+            reject(new Error("Failed to start TTS process: " + err.message));
+        });
+    });
 };
 
 module.exports = runTTS;
