@@ -1,36 +1,31 @@
-
-const {emotions} = require("../database/db")
-const {languages} = require("../database/db")
-const runTTS = require("../Execution/runtts")
-
-
+const { emotions, languages } = require("../database/db");
+const runTTS = require("../Execution/runtts");
 const path = require("path");
 
-
-async function ttscontroller(text,gender,emotion,language) {
+async function ttscontroller(text, gender, emotion, language, agegroup) {
 
     const languagedoc = await languages.findById("languages_map");
-    
+
     if (!languagedoc) {
-        return res.status(400).json({
-            msg: "language data not found"
-        });
+        throw new Error("language data not found");
     }
-    
+
     const languagecode = languagedoc.languages.get(language);
 
+    if (!languagecode) {
+        throw new Error("language mapping not found");
+    }
+
     const voice = await emotions.findOne({
-        gender: gender,
-        emotion: emotion
+        gender,
+        emotion,   
+        agegroup
     });
 
     if (!voice) {
-        return res.status(400).json({
-            msg: "our model does not support this voice right now"
-        });
+        throw new Error("voice not found for given parameters");
     }
 
-    // ✅ FIXED PATH (IMPORTANT)
     const fullPath = path.join(
         "D:/COQUITTS/voices",
         voice.filePath.replace(/^\/+/, "")
@@ -38,10 +33,10 @@ async function ttscontroller(text,gender,emotion,language) {
 
     const outputPath = await runTTS(text, fullPath, languagecode);
 
-    return ({
+    return {
         outputPath,
         voice
-    });
+    };
 }
 
-module.exports = ttscontroller;
+module.exports = ttscontroller;  

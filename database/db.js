@@ -5,7 +5,8 @@ mongoose.connect("mongodb+srv://cr7xkunal:lollodon@cluster0.tz4y4ua.mongodb.net/
 const emotionsschema=mongoose.Schema({
      "gender":String,
      "emotion":String,
-     "filePath":String
+     "filePath":String,
+     "agegroup":String
 })
 
 const languageSchema = new mongoose.Schema({

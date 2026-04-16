@@ -1,33 +1,31 @@
-const speechtotext = require("./stt")
-const ttscontroller = require("./tts")
+const speechtotext = require("./stt");
+const ttscontroller = require("./tts");
 
-async function controller(req,res){
-    const {gender,emotion,language}=req.body;
+async function controller(req, res) {
+    const {  gender, emotion, language, agegroup } = req.body;
 
-    if(!gender||!emotion || !language){
+    if ( !gender || !emotion || !language || !agegroup) {
         return res.status(400).json({
-            msg:"all fields are not selected"
-        })
+            msg: "all fields are not selected"
+        });
     }
-
     
-    
-    const b= await speechtotext()
+    const text = await speechtotext()
     const a = await ttscontroller(
-        b,
+        text,
         gender,
         emotion,
-        language
-    )
+        language,
+        agegroup
+    );
     
-    
-    res.json({
-        msg:"process completed successfully",
-        outputpath:a.outputPath,
-        gender:a.voice.gender,
-        emotion:a.voice.emotion
-
-    })
+    return res.json({
+        msg: "process completed successfully",
+        outputpath: a.outputPath,
+        gender: a.voice.gender,
+        emotion: a.voice.emotion,
+        agegroup: a.voice.agegroup
+    });
 }
 
-module.exports=controller;
+module.exports = controller;
