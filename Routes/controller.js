@@ -1,31 +1,32 @@
 const speechtotext = require("./stt");
 const ttscontroller = require("./tts");
+const translateText = require("./translate");
 
 async function controller(req, res) {
-    const {  gender, emotion, language, agegroup } = req.body;
+    try {
+        const { gender, emotion, language, agegroup } = req.body;
 
-    if ( !gender || !emotion || !language || !agegroup) {
-        return res.status(400).json({
-            msg: "all fields are not selected"
+        const text = await speechtotext();
+
+        const translated = await translateText(text, language);
+
+        const a = await ttscontroller(  
+            translated,
+            gender,
+            emotion,
+            language,
+            agegroup
+        );     
+        
+        res.json({
+            originalText: text,
+            translatedText: translated,
+            outputpath: a.outputPath
         });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
-    
-    const text = await speechtotext()
-    const a = await ttscontroller(
-        text,
-        gender,
-        emotion,
-        language,
-        agegroup
-    );
-    
-    return res.json({
-        msg: "process completed successfully",
-        outputpath: a.outputPath,
-        gender: a.voice.gender,
-        emotion: a.voice.emotion,
-        agegroup: a.voice.agegroup
-    });
 }
 
 module.exports = controller;

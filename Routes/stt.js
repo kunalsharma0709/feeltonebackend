@@ -9,20 +9,20 @@ function speechtotext() {
         );
         
         let finalText = "";
-
+        
         process.stderr.on("data", (data) => {
             console.error("PYTHON:", data.toString());
         });
 
         process.stdout.on("data", (data) => {
             finalText += data.toString();
-        });
-
+        });  
+        
         process.on("close", (code) => {
             if (code !== 0) {
                 return reject(new Error("STT process failed with code " + code));
             }
-
+           
             // Remove any "Detected language: ..." lines Whisper leaks to stdout
             const cleaned = finalText
                 .split("\n")

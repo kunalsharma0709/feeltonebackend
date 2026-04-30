@@ -6,7 +6,7 @@ app.use(express.json());
 
 const controller =require("./Routes/controller");
 const speechtotext =require("./Routes/stt")
-app.post("/lolla",controller);
+app.post("/xoxo",controller);
 
 app.get("/",(req,res)=>{
     return res.json({
